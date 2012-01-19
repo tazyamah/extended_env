@@ -1,6 +1,6 @@
 = extended_env
 
-Description goes here.
+https://github.com/tazyamah/extended_env/wiki/Home
 
 == Contributing to extended_env
  
