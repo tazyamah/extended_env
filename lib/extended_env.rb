@@ -2,8 +2,9 @@
 class ExtendedEnv
   @@init = false
   @@config_file = ".env"
-  @@keygen = lambda{|name| [name.to_s.upcase, name.to_s.downcase]}
-  @@namegen = lambda{|name| name.to_s.downcase}
+  @@keygen  = lambda{|name|  [name.to_s.upcase, name.to_s.downcase] }
+  @@namegen = lambda{|name|  name.to_s.downcase }
+  @@procgen = lambda{|value| Proc.new{ value } }
 
   def self.method_missing(name, *args, &block)
     init
@@ -12,15 +13,23 @@ class ExtendedEnv
   end
 
   def self.config_file=(config_file)
+    raise "should call before init" if @@init
     @@config_file = config_file
   end
 
   def self.env_key_generator=(gen)
+    raise "should call before init" if @@init
     @@keygen = gen
   end
   
   def self.env_name_generator=(gen)
+    raise "should call before init" if @@init
     @@namegen = gen
+  end
+
+  def self.proc_generator=(gen)
+    raise "should call before init" if @@init
+    @@procgen = gen
   end
 
   private
@@ -44,7 +53,7 @@ class ExtendedEnv
     value = @@keygen.call(name).map{|env_key| ENV[env_key]}.compact.first unless value
     
     sig = class << self; self end
-    sig.send :define_method, name.to_sym, Proc.new{ value }
+    sig.send :define_method, name.to_sym, @@procgen.call(value)
   end
 end
 
